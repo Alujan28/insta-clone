@@ -10,13 +10,9 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    photo: {
-        type: String,
-        default: "no photo"
-    },
     postedBy: {
-        type: ObjectId, 
-        ref: "User"
+        type: ObjectId, // Refers to the `_id` of the User model
+        ref: "User" // Name of the model you're referencing
     }
 });
 
