@@ -1,189 +1,124 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from 'react';
+import { UserContext } from '../../App';
+import { Link } from 'react-router-dom';
+import M from 'materialize-css';
 
 const Home = () => {
-  return (
-    <div className="home">
-      <div className="card home-card">
-        <h5>hinata</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/giraffes-neon-lights_23-2151726111.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="hinata"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { state } = useContext(UserContext);
 
-      <div className="card home-card">
-        <h5>naruto</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/morskie-oko-tatry_1204-510.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="naruto"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
+    useEffect(() => {
+        fetch('/allpost', {
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem("jwt"),
+            },
+        })
+            .then((res) => res.json())
+            .then((result) => {
+                setData(result.posts);
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.log(err);
+                setLoading(false);
+            });
+    }, []);
 
-      <div className="card home-card">
-        <h5>sasuke</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/lone-tree_181624-46361.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="sasuke"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
+    const updatePost = (url, body) => {
+        fetch(url, {
+            method: "put",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("jwt"),
+            },
+            body: JSON.stringify(body),
+        })
+            .then((res) => res.json())
+            .then((result) => {
+                const newData = data.map((item) => (item._id === result._id ? result : item));
+                setData(newData);
+            })
+            .catch((err) => {
+                console.log(err);
+                M.toast({ html: "Something went wrong!", classes: "#c62828 red darken-3" });
+            });
+    };
 
-      <div className="card home-card">
-        <h5>itachi</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/view-old-tree-lake-with-snow-covered-mountains-cloudy-day_181624-28954.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="itachi"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
+    const deletePost = (postId) => {
+        if (!window.confirm("Are you sure you want to delete this post?")) return;
+        fetch(`/deletepost/${postId}`, {
+            method: "delete",
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem("jwt"),
+            },
+        })
+            .then((res) => res.json())
+            .then((result) => {
+                const newData = data.filter((item) => item._id !== result._id);
+                setData(newData);
+            })
+            .catch((err) => {
+                console.log(err);
+                M.toast({ html: "Failed to delete post!", classes: "#c62828 red darken-3" });
+            });
+    };
 
-      <div className="card home-card">
-        <h5>giraya</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/old-rusty-fishing-boat-slope-along-shore-lake_181624-44902.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="giraya"
-          />
+    return (
+        <div className="home">
+            {loading && <h5>Loading...</h5>}
+            {!loading && data.length === 0 && <h5>No posts available</h5>}
+            {data.map((item) => (
+                <div className="card home-card" key={item._id}>
+                    <h5 style={{ padding: "5px" }}>
+                        <Link to={item.postedBy?._id !== state?._id ? `/profile/${item.postedBy._id}` : "/profile"}>
+                            {item.postedBy?.name || "Unknown"}
+                        </Link>
+                        {item.postedBy?._id === state?._id && (
+                            <i
+                                className="material-icons"
+                                style={{ float: "right" }}
+                                onClick={() => deletePost(item._id)}
+                            >
+                                delete
+                            </i>
+                        )}
+                    </h5>
+                    <div className="card-image">
+                        <img src={item.photo} alt={item.title} />
+                    </div>
+                    <div className="card-content">
+                        <i className="material-icons" style={{ color: "red" }}>favorite</i>
+                        {item.likes?.includes(state._id) ? (
+                            <i className="material-icons" onClick={() => updatePost("/unlike", { postId: item._id })}>
+                                thumb_down
+                            </i>
+                        ) : (
+                            <i className="material-icons" onClick={() => updatePost("/like", { postId: item._id })}>
+                                thumb_up
+                            </i>
+                        )}
+                        <h6>{item.likes?.length || 0} likes</h6>
+                        <h6>{item.title}</h6>
+                        <p>{item.body}</p>
+                        {item.comments?.map((record) => (
+                            <h6 key={record._id}>
+                                <span style={{ fontWeight: "500" }}>{record.postedBy?.name || "Anonymous"}</span> {record.text}
+                            </h6>
+                        ))}
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                updatePost("/comment", { text: e.target[0].value, postId: item._id });
+                            }}
+                        >
+                            <input type="text" placeholder="Add a comment" />
+                        </form>
+                    </div>
+                </div>
+            ))}
         </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
-
-      <div className="card home-card">
-        <h5>sakura</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/beautiful-selective-focus-shot-crystal-ball-reflecting-breathtaking-sunset_181624-8579.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="sakura"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
-
-      <div className="card home-card">
-        <h5>minato</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/aerial-beautiful-shot-seashore-with-hills-background-sunset_181624-24143.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="minato"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
-
-      <div className="card home-card">
-        <h5>danzo</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/vestrahorn-mountains-stokksnes-iceland_335224-667.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="danzo"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
-
-      <div className="card home-card">
-        <h5>tsunade</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/lake-mountains_1204-502.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="tsunade"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
-
-      <div className="card home-card">
-        <h5>kakashi</h5>
-        <div className="card-image">
-          <img
-            src="https://img.freepik.com/free-photo/misurina-sunset_181624-34793.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-            alt="kakashi"
-          />
-        </div>
-        <div className="card-content">
-          <i className="material-icons" style={{ color: "red" }}>
-            favorite
-          </i>
-          <h6>title</h6>
-          <p>this is amazing post</p>
-          <input type="text" placeholder="add a comment" />
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Home;

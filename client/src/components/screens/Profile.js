@@ -1,126 +1,120 @@
-import React from "react";
+import React, { useEffect, useState, useContext } from 'react';
+import { UserContext } from '../../App';
 
 const Profile = () => {
+    const [mypics, setPics] = useState([]);
+    const { state, dispatch } = useContext(UserContext);
+    const [image, setImage] = useState("");
+
+    useEffect(() => {
+        fetch('/mypost', {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("jwt"),
+            },
+        })
+            .then((res) => res.json())
+            .then((result) => {
+                setPics(result.mypost);
+            })
+            .catch((err) => {
+                console.error("Error fetching posts:", err);
+            });
+    }, []);
+
+    useEffect(() => {
+        if (image) {
+            const data = new FormData();
+            data.append("file", image);
+            data.append("upload_preset", "insta-clone");
+            data.append("cloud_name", "cnq");
+
+            fetch("https://api.cloudinary.com/v1_1/dqkmnrjdr/image/upload", {
+                method: "POST",
+                body: data,
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    fetch('/updatepic', {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + localStorage.getItem("jwt"),
+                        },
+                        body: JSON.stringify({
+                            pic: data.url,
+                        }),
+                    })
+                        .then((res) => res.json())
+                        .then((result) => {
+                            localStorage.setItem("user", JSON.stringify({ ...state, pic: result.pic }));
+                            dispatch({ type: "UPDATEPIC", payload: result.pic });
+                        })
+                        .catch((err) => console.error("Error updating profile pic:", err));
+                })
+                .catch((err) => console.error("Error uploading image:", err));
+        }
+    }, [image, state, dispatch]);
+
+    const updatePhoto = (file) => {
+        setImage(file);
+    };
+
     return (
-        <div style={{
-            maxWidth: "850px", 
-            margin: "0 auto",
-            padding: "20px", 
-        }}>
-            {/* Profile Header */}
-            <div style={{
-                display: "flex",
-                flexWrap: "wrap", 
-                justifyContent: "space-around",
-                alignItems: "center", 
-                margin: "20px 0px",
-                borderBottom: "1px solid grey",
-                paddingBottom: "20px", 
-            }}>
-                {/* Profile Image */}
-                <div style={{
-                    marginBottom: "20px",
-                    flexBasis: "150px", 
-                    textAlign: "center",
-                }}>
-                    <img
-                        style={{
-                            width: "150px",
-                            height: "150px",
-                            borderRadius: "75px", 
-                        }}
-                        src="https://img.freepik.com/free-photo/pretty-zo-qn-zith-photo-frq-e-close-up_1187-5658.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-                        alt="Profile"
-                    />
-                </div>
-                {/* Profile Details */}
-                <div style={{
-                    flex: 1, 
-                    minWidth: "250px",
-                    textAlign: "center",
-                }}>
-                    <h4 style={{
-                        margin: "0px",
-                        marginBottom: "10px",
-                        fontSize: "1.5rem", 
-                    }}>hinata hyuga</h4>
-                    <div style={{
+        <div style={{ maxWidth: "550px", margin: "0px auto" }}>
+            <div
+                style={{
+                    margin: "18px 0px",
+                    borderBottom: "1px solid grey",
+                }}
+            >
+                <div
+                    style={{
                         display: "flex",
-                        justifyContent: "space-between",
-                        maxWidth: "300px",
-                        margin: "0 auto", 
-                    }}>
-                        <h6>40 posts</h6>
-                        <h6>40 followers</h6>
-                        <h6>40 following</h6>
+                        justifyContent: "space-around",
+                    }}
+                >
+                    <div>
+                        <img
+                            style={{
+                                width: "160px",
+                                height: "160px",
+                                borderRadius: "80px",
+                            }}
+                            src={state?.pic || "https://via.placeholder.com/160"}
+                            alt="profile"
+                        />
+                    </div>
+                    <div>
+                        <h4>{state?.name || "loading"}</h4>
+                        <h5>{state?.email || "loading"}</h5>
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                width: "108%",
+                            }}
+                        >
+                            <h6>{mypics.length} posts</h6>
+                            <h6>{state?.followers?.length || "0"} followers</h6>
+                            <h6>{state?.following?.length || "0"} following</h6>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="file-field input-field" style={{ margin: "10px" }}>
+                    <div className="btn #64b5f6 blue darken-1">
+                        <span>Update pic</span>
+                        <input type="file" onChange={(e) => updatePhoto(e.target.files[0])} />
+                    </div>
+                    <div className="file-path-wrapper">
+                        <input className="file-path validate" type="text" />
                     </div>
                 </div>
             </div>
-
-            {/* Gallery Section */}
-            <div
-                className="gallery"
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", 
-                    gap: "15px",
-                    marginTop: "20px",
-                }}
-            >
-                <img
-                    className="item"
-                    src="https://img.freepik.com/free-photo/pretty-girl-showing-gesture-like-frame_1187-5744.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-                    alt="Gallery"
-                    style={{
-                        width: "100%",
-                        borderRadius: "10px",
-                    }}
-                />
-                <img
-                    className="item"
-                    src="https://img.freepik.com/free-photo/pretty-girl-showing-gesture-like-frame_1187-5744.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-                    alt="Gallery"
-                    style={{
-                        width: "100%",
-                        borderRadius: "10px",
-                    }}
-                />
-                <img
-                    className="item"
-                    src="https://img.freepik.com/free-photo/pretty-girl-showing-gesture-like-frame_1187-5744.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-                    alt="Gallery"
-                    style={{
-                        width: "100%",
-                        borderRadius: "10px",
-                    }}
-                />
-                <img
-                    className="item"
-                    src="https://img.freepik.com/free-photo/pretty-girl-showing-gesture-like-frame_1187-5744.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-                    alt="Gallery"
-                    style={{
-                        width: "100%",
-                        borderRadius: "10px",
-                    }}
-                />
-                <img
-                    className="item"
-                    src="https://img.freepik.com/free-photo/pretty-girl-showing-gesture-like-frame_1187-5744.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-                    alt="Gallery"
-                    style={{
-                        width: "100%",
-                        borderRadius: "10px",
-                    }}
-                />
-                <img
-                    className="item"
-                    src="https://img.freepik.com/free-photo/pretty-girl-showing-gesture-like-frame_1187-5744.jpg?uid=R147514784&ga=GA1.1.1158692380.1730345942&semt=ais_hybrid"
-                    alt="Gallery"
-                    style={{
-                        width: "100%",
-                        borderRadius: "10px",
-                    }}
-                />
+            <div className="gallery">
+                {mypics.map((item) => (
+                    <img key={item._id} className="item" src={item.photo} alt={item.title} />
+                ))}
             </div>
         </div>
     );

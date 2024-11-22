@@ -1,52 +1,97 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import M from "materialize-css";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import M from 'materialize-css';
 
-const Signup = () => {
+const SignUp = () => {
     const navigate = useNavigate();
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [name, setName] = useState('');
+    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const [image, setImage] = useState('');
+    const [url, setUrl] = useState(undefined);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const isValidEmail = (email) => {
-        return /\S+@\S+\.\S+/.test(email);
+    useEffect(() => {
+        if (url) {
+            uploadFields();
+        }
+    }, [url]);
+
+    const uploadPic = () => {
+        if (!image) return;
+        const fileType = image.type.split('/')[0];
+        if (fileType !== 'image') {
+            M.toast({ html: 'Only image files are allowed', classes: '#c62828 red darken-3' });
+            return;
+        }
+        setIsLoading(true);
+        const data = new FormData();
+        data.append('file', image);
+        data.append('upload_preset', 'new-insta');
+        data.append('cloud_name', 'cnq');
+        fetch("https://api.cloudinary.com/v1_1/dqkmnrjdr/image/upload", {
+            method: 'post',
+            body: data,
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                setUrl(data.url);
+                setIsLoading(false);
+            })
+            .catch((err) => {
+                console.error(err);
+                setIsLoading(false);
+                M.toast({ html: 'Image upload failed', classes: '#c62828 red darken-3' });
+            });
     };
 
-    const PostData = () => {
-        if (!name || !email || !password) {
-            M.toast({ html: "Please fill all fields", classes: "#e53935 red darken-1" });
+    const uploadFields = () => {
+        // Validate fields before submitting
+        if (!name || !password || !email) {
+            M.toast({ html: 'All fields are required', classes: '#c62828 red darken-3' });
             return;
         }
-
-        if (!isValidEmail(email)) {
-            M.toast({ html: "Invalid email format", classes: "#e53935 red darken-1" });
+        if (!/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email)) {
+            M.toast({ html: 'Invalid email', classes: '#c62828 red darken-3' });
             return;
         }
-
-        fetch("/signup", {
-            method: "POST",
+        setIsLoading(true);
+        fetch('/signup', {
+            method: 'post',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 name,
-                email,
                 password,
+                email,
+                pic: url,
             }),
         })
             .then((res) => res.json())
             .then((data) => {
+                setIsLoading(false);
                 if (data.error) {
-                    M.toast({ html: data.error, classes: "#e53935 red darken-1" });
+                    M.toast({ html: data.error, classes: '#c62828 red darken-3' });
                 } else {
-                    M.toast({ html: data.message, classes: "#43a047 green darken-1" });
-                    navigate("/signin");
+                    M.toast({ html: data.message, classes: '#43a047 green darken-1' });
+                    navigate('/signin');
                 }
             })
             .catch((err) => {
-                console.error("Error:", err);
-                M.toast({ html: "Something went wrong", classes: "#e53935 red darken-1" });
+                console.error(err);
+                setIsLoading(false);
+                M.toast({ html: 'Signup failed', classes: '#c62828 red darken-3' });
             });
+    };
+
+    const PostData = (e) => {
+        e.preventDefault();
+        if (image) {
+            uploadPic();
+        } else {
+            uploadFields();
+        }
     };
 
     return (
@@ -71,11 +116,21 @@ const Signup = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
+                <div className="file-field input-field">
+                    <div className="btn #64b5f6 blue darken-1">
+                        <span>Upload Pic</span>
+                        <input type="file" onChange={(e) => setImage(e.target.files[0])} />
+                    </div>
+                    <div className="file-path-wrapper">
+                        <input className="file-path validate" type="text" />
+                    </div>
+                </div>
                 <button
                     className="btn waves-effect waves-light #64b5f6 blue darken-1"
                     onClick={PostData}
+                    disabled={isLoading}
                 >
-                    Signup
+                    {isLoading ? 'Loading...' : 'SignUp'}
                 </button>
                 <h5>
                     <Link to="/signin">Already have an account?</Link>
@@ -85,4 +140,4 @@ const Signup = () => {
     );
 };
 
-export default Signup;
+export default SignUp;
