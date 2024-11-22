@@ -4,16 +4,20 @@ const { ObjectId } = mongoose.Schema.Types;
 const postSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
     },
     body: {
         type: String,
-        required: true
+        required: true,
+    },
+    pic: { // Store the image URL
+        type: String,
+        required: true,
     },
     postedBy: {
-        type: ObjectId, // Refers to the `_id` of the User model
-        ref: "User" // Name of the model you're referencing
-    }
-});
+        type: ObjectId,
+        ref: "User",
+    },
+}, { timestamps: true });
 
 mongoose.model("Post", postSchema);
