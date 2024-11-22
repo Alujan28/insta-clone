@@ -1,7 +1,7 @@
-import React, { useEffect, createContext, useReducer } from 'react';
+import React, { useEffect, createContext, useReducer, useContext } from 'react';
 import NavBar from './components/Navbar';
-import "./App.css";
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import './App.css';
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'; // Updated to v6
 import Home from './components/screens/Home';
 import Signin from './components/screens/SignIn';
 import Profile from './components/screens/Profile';
@@ -16,7 +16,8 @@ import NewPassword from './components/screens/Newpassword';
 export const UserContext = createContext();
 
 const Routing = () => {
-  const { dispatch } = React.useContext(UserContext);
+  const navigate = useNavigate(); // Use useNavigate for react-router-dom v6
+  const { state, dispatch } = useContext(UserContext);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -24,10 +25,10 @@ const Routing = () => {
       dispatch({ type: "USER", payload: user });
     } else {
       if (!window.location.pathname.startsWith('/reset')) {
-        window.location.pathname = '/signin';
+        navigate('/signin');
       }
     }
-  }, [dispatch]); // Added dispatch to dependency
+  }, [dispatch, navigate]); // Added dispatch and navigate to the dependency array
 
   return (
     <Routes>

@@ -1,56 +1,51 @@
-import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { UserContext } from '../../App';
-import M from 'materialize-css';
+import React, { useState, useContext } from 'react'
+import { Link, useNavigate } from 'react-router-dom'  // Use useNavigate instead of useHistory
+import { UserContext } from '../../App'
+import M from 'materialize-css'
 
 const SignIn = () => {
-    const { dispatch } = useContext(UserContext);
-    const navigate = useNavigate();
-    const [password, setPassword] = useState('');
-    const [email, setEmail] = useState('');
+    const { state, dispatch } = useContext(UserContext)
+    const navigate = useNavigate()  // Use useNavigate instead of useHistory
+    const [password, setPassword] = useState("")
+    const [email, setEmail] = useState("")
 
-    // Helper function for toast messages
-    const showToast = (message, classes) => {
-        M.toast({ html: message, classes });
-    };
+    const PostData = () => {
+        // Email validation regex
+        const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-    // Email validation function
-    const isValidEmail = (email) => {
-        const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-        return regex.test(email);
-    };
-
-    const PostData = async () => {
-        if (!isValidEmail(email)) {
-            showToast('Invalid email', '#c62828 red darken-3');
-            return;
+        if (!emailRegex.test(email)) {
+            M.toast({ html: "Invalid email", classes: "#c62828 red darken-3" })
+            return
         }
 
-        try {
-            const res = await fetch('/signin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ password, email }),
-            });
-
-            const data = await res.json();
-
+        // Sending sign-in data to the backend
+        fetch("/signin", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                password,
+                email
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log(data)
             if (data.error) {
-                showToast(data.error, '#c62828 red darken-3');
+                M.toast({ html: data.error, classes: "#c62828 red darken-3" })
             } else {
-                localStorage.setItem('jwt', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                dispatch({ type: 'USER', payload: data.user });
-                showToast('Signed in successfully', '#43a047 green darken-1');
-                navigate('/');
+                localStorage.setItem("jwt", data.token)
+                localStorage.setItem("user", JSON.stringify(data.user))
+                dispatch({ type: "USER", payload: data.user })
+                M.toast({ html: "Signed in successfully", classes: "#43a047 green darken-1" })
+                navigate('/')  // Use navigate instead of history.push
             }
-        } catch (err) {
-            console.log(err);
-            showToast('Something went wrong, please try again later.', '#c62828 red darken-3');
-        }
-    };
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    }
 
     return (
         <div className="mycard">
@@ -58,20 +53,19 @@ const SignIn = () => {
                 <h2>Instagram</h2>
                 <input
                     type="text"
-                    placeholder="Email"
+                    placeholder="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}  // Handle email input change
                 />
                 <input
                     type="password"
-                    placeholder="Password"
+                    placeholder="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}  // Handle password input change
                 />
-                <button
+                <button 
                     className="btn waves-effect waves-light #64b5f6 blue darken-1"
-                    onClick={PostData}
-                    disabled={!email || !password || !isValidEmail(email)} // Disable if email or password is empty
+                    onClick={PostData}  // Trigger PostData on button click
                 >
                     Login
                 </button>
@@ -83,7 +77,7 @@ const SignIn = () => {
                 </h6>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default SignIn;
+export default SignIn
