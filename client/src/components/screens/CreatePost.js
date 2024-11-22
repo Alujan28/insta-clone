@@ -11,12 +11,11 @@ const CreatePost = () => {
 
     useEffect(() => {
         if (url) {
-            const token = localStorage.getItem("jwt");
             fetch("/createpost", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: "Bearer " + token,
+                    Authorization: "Bearer " + localStorage.getItem("jwt"),
                 },
                 body: JSON.stringify({
                     title,
