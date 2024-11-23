@@ -1,16 +1,16 @@
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate instead of useHistory
+import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../../App';
 import M from 'materialize-css';
 
 const SignIn = () => {
-  const { state, dispatch } = useContext(UserContext);
-  const navigate = useNavigate(); // Use useNavigate hook for navigation
-  const [password, setPasword] = useState("");
+  const { dispatch } = useContext(UserContext); // Removed 'state' here
+  const navigate = useNavigate();
+  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
 
   const PostData = () => {
-    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/.test(email)) {
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       M.toast({ html: "invalid email", classes: "#c62828 red darken-3" });
       return;
     }
@@ -26,7 +26,6 @@ const SignIn = () => {
       })
     }).then(res => res.json())
       .then(data => {
-        console.log(data);
         if (data.error) {
           M.toast({ html: data.error, classes: "#c62828 red darken-3" });
         } else {
@@ -34,7 +33,7 @@ const SignIn = () => {
           localStorage.setItem("user", JSON.stringify(data.user));
           dispatch({ type: "USER", payload: data.user });
           M.toast({ html: "signedin success", classes: "#43a047 green darken-1" });
-          navigate('/'); // Use navigate() instead of history.push()
+          navigate('/'); // Use navigate() for redirecting
         }
       }).catch(err => {
         console.log(err);
@@ -55,7 +54,7 @@ const SignIn = () => {
           type="password"
           placeholder="password"
           value={password}
-          onChange={(e) => setPasword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)} 
         />
         <button className="btn waves-effect waves-light #64b5f6 blue darken-1"
           onClick={() => PostData()}
@@ -63,10 +62,10 @@ const SignIn = () => {
           Login
         </button>
         <h5>
-          <Link to="/signup">Dont have an account ?</Link>
+          <Link to="/signup">Don't have an account?</Link>
         </h5>
         <h6>
-          <Link to="/reset">Forgot password ?</Link>
+          <Link to="/reset">Forgot password?</Link>
         </h6>
       </div>
     </div>

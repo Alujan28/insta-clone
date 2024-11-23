@@ -16,8 +16,8 @@ import NewPassword from './components/screens/Newpassword';
 export const UserContext = createContext();
 
 const Routing = () => {
-  const navigate = useNavigate(); // Correct hook usage here
-  const { state, dispatch } = useContext(UserContext);
+  const navigate = useNavigate();
+  const { dispatch } = useContext(UserContext); // Removed 'state' here
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -39,7 +39,7 @@ const Routing = () => {
       <Route path="/create" element={<CreatePost />} />
       <Route path="/profile/:userid" element={<UserProfile />} />
       <Route path="/myfollowingpost" element={<SubscribedUserPosts />} />
-      <Route exact path="/reset" element={<Reset />} />
+      <Route path="/reset" element={<Reset />} />
       <Route path="/reset/:token" element={<NewPassword />} />
     </Routes>
   );
