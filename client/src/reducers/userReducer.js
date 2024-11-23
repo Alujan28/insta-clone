@@ -1,28 +1,24 @@
 export const initialState = null;
 
 export const reducer = (state, action) => {
-  switch (action.type) {
-    case 'USER':
-      return action.payload;
-
-    case 'CLEAR':
-      return null;
-
-    case 'UPDATE':
-      // Handle the case where state is null (initial state) by ensuring it has a default structure
-      return {
-        ...state,
-        followers: action.payload.followers,
-        following: action.payload.following,
-      };
-
-    case 'UPDATEPIC':
-      return {
-        ...state,
-        pic: action.payload,
-      };
-
-    default:
-      return state;
-  }
+    if (action.type === "USER") {  // Use strict equality (===)
+        return action.payload;
+    }
+    if (action.type === "CLEAR") {  // Use strict equality (===)
+        return null;
+    }
+    if (action.type === "UPDATE") {  // Use strict equality (===)
+        return {
+            ...state,
+            followers: action.payload.followers,
+            following: action.payload.following
+        };
+    }
+    if (action.type === "UPDATEPIC") {  // Use strict equality (===)
+        return {
+            ...state,
+            pic: action.payload
+        };
+    }
+    return state;
 };

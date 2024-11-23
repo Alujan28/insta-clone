@@ -1,7 +1,7 @@
 import React, { useEffect, createContext, useReducer, useContext } from 'react';
 import NavBar from './components/Navbar';
-import './App.css';
-import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'; // Updated to v6
+import "./App.css";
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import Home from './components/screens/Home';
 import Signin from './components/screens/SignIn';
 import Profile from './components/screens/Profile';
@@ -16,7 +16,7 @@ import NewPassword from './components/screens/Newpassword';
 export const UserContext = createContext();
 
 const Routing = () => {
-  const navigate = useNavigate(); // Use useNavigate for react-router-dom v6
+  const navigate = useNavigate(); // Correct hook usage here
   const { state, dispatch } = useContext(UserContext);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const Routing = () => {
         navigate('/signin');
       }
     }
-  }, [dispatch, navigate]); // Added dispatch and navigate to the dependency array
+  }, [dispatch, navigate]);
 
   return (
     <Routes>
@@ -39,7 +39,7 @@ const Routing = () => {
       <Route path="/create" element={<CreatePost />} />
       <Route path="/profile/:userid" element={<UserProfile />} />
       <Route path="/myfollowingpost" element={<SubscribedUserPosts />} />
-      <Route path="/reset" element={<Reset />} />
+      <Route exact path="/reset" element={<Reset />} />
       <Route path="/reset/:token" element={<NewPassword />} />
     </Routes>
   );

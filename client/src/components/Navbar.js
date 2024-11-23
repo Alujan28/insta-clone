@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'  // Replaced useHistory with useNavigate
+import { Link, useNavigate } from 'react-router-dom'  // Change: useHistory -> useNavigate
 import { UserContext } from '../App'
 import M from 'materialize-css'
 
@@ -8,7 +8,7 @@ const NavBar = () => {
     const [search, setSearch] = useState('')
     const [userDetails, setUserDetails] = useState([])
     const { state, dispatch } = useContext(UserContext)
-    const navigate = useNavigate()  // useNavigate instead of useHistory
+    const navigate = useNavigate()  // Change: useHistory() -> useNavigate()
 
     useEffect(() => {
         M.Modal.init(searchModal.current)
@@ -22,12 +22,11 @@ const NavBar = () => {
                 <li key="3"><Link to="/create">Create Post</Link></li>,
                 <li key="4"><Link to="/myfollowingpost">My following Posts</Link></li>,
                 <li key="5">
-                    <button
-                        className="btn #c62828 red darken-3"
+                    <button className="btn #c62828 red darken-3"
                         onClick={() => {
                             localStorage.clear()
                             dispatch({ type: "CLEAR" })
-                            navigate('/signin')  // Use navigate for routing
+                            navigate('/signin')  // Change: history.push() -> navigate()
                         }}
                     >
                         Logout
@@ -45,11 +44,13 @@ const NavBar = () => {
     const fetchUsers = (query) => {
         setSearch(query)
         fetch('/search-users', {
-            method: "POST",
+            method: "post",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ query })
+            body: JSON.stringify({
+                query
+            })
         }).then(res => res.json())
             .then(results => {
                 setUserDetails(results.user)
@@ -64,7 +65,6 @@ const NavBar = () => {
                     {renderList()}
                 </ul>
             </div>
-
             <div id="modal1" className="modal" ref={searchModal} style={{ color: "black" }}>
                 <div className="modal-content">
                     <input
@@ -74,22 +74,20 @@ const NavBar = () => {
                         onChange={(e) => fetchUsers(e.target.value)}
                     />
                     <ul className="collection">
-                        {userDetails.map(item => (
-                            <Link 
-                                to={item._id !== state._id ? "/profile/" + item._id : '/profile'} 
-                                onClick={() => {
+                        {userDetails.map(item => {
+                            return (
+                                <Link to={item._id !== state._id ? "/profile/" + item._id : '/profile'} onClick={() => {
                                     M.Modal.getInstance(searchModal.current).close()
                                     setSearch('')
-                                }}
-                                key={item._id}
-                            >
-                                <li className="collection-item">{item.email}</li>
-                            </Link>
-                        ))}
+                                }} key={item._id}>
+                                    <li className="collection-item">{item.email}</li>
+                                </Link>
+                            )
+                        })}
                     </ul>
                 </div>
                 <div className="modal-footer">
-                    <button className="modal-close waves-effect waves-green btn-flat" onClick={() => setSearch('')}>Close</button>
+                    <button className="modal-close waves-effect waves-green btn-flat" onClick={() => setSearch('')}>close</button>
                 </div>
             </div>
         </nav>

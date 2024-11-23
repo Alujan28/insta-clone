@@ -1,12 +1,11 @@
 import React, { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom' // useNavigate instead of useHistory
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import M from 'materialize-css'
 
 const SignIn = () => {
-    const navigate = useNavigate()  // useNavigate hook
-    const [password, setPassword] = useState("")  // Corrected the typo
-    const { token } = useParams()  // Params to fetch the token from the URL
-
+    const navigate = useNavigate()  // Replaced useHistory with useNavigate
+    const [password, setPassword] = useState("")
+    const { token } = useParams()
     console.log(token)
 
     const PostData = () => {
@@ -24,10 +23,9 @@ const SignIn = () => {
             console.log(data)
             if (data.error) {
                 M.toast({ html: data.error, classes: "#c62828 red darken-3" })
-            }
-            else {
+            } else {
                 M.toast({ html: data.message, classes: "#43a047 green darken-1" })
-                navigate('/signin')  // use navigate instead of history.push
+                navigate('/signin')  // Use navigate instead of history.push
             }
         }).catch(err => {
             console.log(err)
@@ -42,11 +40,11 @@ const SignIn = () => {
                     type="password"
                     placeholder="Enter a new password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}  // Corrected the typo
+                    onChange={(e) => setPassword(e.target.value)}
                 />
                 <button className="btn waves-effect waves-light #64b5f6 blue darken-1"
-                        onClick={PostData}>
-                    Update Password
+                    onClick={() => PostData()}>
+                    Update password
                 </button>
             </div>
         </div>
